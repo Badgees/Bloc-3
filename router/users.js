@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const db = require('./../services/database')
 
-const JWT_SECRET = "HelloThereImObiWan"
+const JWT_SECRET = process.env.JWT_SECRET || ''
 
 function authenticateToken(req, res, next) {
     const token = req.cookies.token
@@ -34,11 +34,18 @@ router
 })
 
 .post('/register', async (req, res) => {
-    const { name, prenom, email, password, role } = req.body
-    console.log(req.body)
+    const { name, prenom, email, password } = req.body
+
+    if (!name || !prenom || !email || !password)
+        return res.status(400).send('Tous les champs sont requis')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        return res.status(400).send('Email invalide')
+    if (password.length < 8)
+        return res.status(400).send('Le mot de passe doit contenir au moins 8 caractères')
+
     const hashedPassword = await bcrypt.hash(password, 10)
     const sql = 'INSERT INTO utilisateurs (nom, prenom, email, mot_de_passe, role) VALUES (?, ?, ?, ?, ?)'
-    db.query(sql, [name, prenom, email, hashedPassword, role || 'utilisateur'], (err, result) => {
+    db.query(sql, [name, prenom, email, hashedPassword, 'utilisateur'], (err) => {
         if (err) {
             console.error(err)
             res.status(500).send('Problème SQL')
