@@ -29,12 +29,11 @@ const base = import.meta.env.VITE_BASE_URL || '/'
                 credentials: 'include'
             })
 
-            const data = await response.json()
-
             if (response.status === 200 ) {
                 navigate('/login')
             } else {
-                setError(data.message || 'Une erreur est survenue. Veuillez réessayer.')
+                const data = await response.text()
+                setError(data || 'Une erreur est survenue. Veuillez réessayer.')
             }
         } catch (err) {
             setError('Une erreur est survenue. Veuillez réessayer.')
