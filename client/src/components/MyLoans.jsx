@@ -40,9 +40,28 @@ const MyLoans = () => {
 
     const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('fr-FR')
 
+    const daysOverdue = (dateRetourPrevue) => {
+        const diff = new Date() - new Date(dateRetourPrevue)
+        return Math.floor(diff / (1000 * 60 * 60 * 24))
+    }
+
+    const overdueLoans = loans.filter(loan => isOverdue(loan.date_retour_prevue, loan.date_retour_effective))
+
     return (
         <div className="container">
             <h2>Mes emprunts</h2>
+            {overdueLoans.length > 0 && (
+                <div style={{ background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', padding: '12px 16px', marginBottom: '16px' }}>
+                    ⚠ Attention : vous avez {overdueLoans.length} emprunt{overdueLoans.length > 1 ? 's' : ''} en retard :
+                    <ul style={{ margin: '8px 0 0 0' }}>
+                        {overdueLoans.map(loan => (
+                            <li key={loan.id_emprunt}>
+                                <strong>{loan.titre}</strong> — retour prévu le {formatDate(loan.date_retour_prevue)} ({daysOverdue(loan.date_retour_prevue)} jour{daysOverdue(loan.date_retour_prevue) > 1 ? 's' : ''} de retard)
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
             {message && <p>{message}</p>}
             {loans.length === 0 ? (
                 <p>Vous n'avez aucun emprunt.</p>
@@ -62,7 +81,7 @@ const MyLoans = () => {
                     </thead>
                     <tbody>
                         {loans.map(loan => (
-                            <tr key={loan.id_emprunt}>
+                            <tr key={loan.id_emprunt} style={isOverdue(loan.date_retour_prevue, loan.date_retour_effective) ? { background: '#fde8e8' } : {}}>
                                 <td>{loan.titre}</td>
                                 <td>{loan.auteur}</td>
                                 <td>{formatDate(loan.date_emprunt)}</td>

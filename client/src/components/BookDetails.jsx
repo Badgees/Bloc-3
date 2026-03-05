@@ -9,6 +9,7 @@ const BookDetails = () => {
     const [userRole, setUserRole] = useState('')
     const [user, setUser] = useState(null)
     const [loanMessage, setLoanMessage] = useState('')
+    const [returnDate, setReturnDate] = useState('')
 
     useEffect(() => {
         fetch(`${base}api/books/${bookId}`, {
@@ -47,14 +48,18 @@ const BookDetails = () => {
         console.log('Supprimer le livre:', bookId);
     };
 
+    const today = new Date().toISOString().split('T')[0]
+    const maxDate = (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().split('T')[0] })()
+
     const handleBorrow = async () => {
         setLoanMessage('')
+        if (!returnDate) return setLoanMessage('Veuillez choisir une date de retour.')
         try {
             const response = await fetch(base + 'api/loans', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ id_livre: bookId })
+                body: JSON.stringify({ id_livre: bookId, date_retour_prevue: returnDate })
             })
             const data = await response.json()
             if (response.ok) {
@@ -85,7 +90,19 @@ const BookDetails = () => {
             <div className="back-button">
                 <button onClick={handleBack}>Retour à la liste des livres</button>
                 {user && book.statut === 'disponible' && (
-                    <button onClick={handleBorrow}>Emprunter</button>
+                    <div>
+                        <label>
+                            Date de retour prévue :&nbsp;
+                            <input
+                                type="date"
+                                min={today}
+                                max={maxDate}
+                                value={returnDate}
+                                onChange={e => setReturnDate(e.target.value)}
+                            />
+                        </label>
+                        <button onClick={handleBorrow}>Emprunter</button>
+                    </div>
                 )}
                 {loanMessage && <p>{loanMessage}</p>}
                 {userRole === 'admin' && (

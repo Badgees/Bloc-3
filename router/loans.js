@@ -33,31 +33,44 @@ router.get('/me', authenticateToken, (req, res) => {
 
 // POST /api/loans — borrow a book
 router.post('/', authenticateToken, (req, res) => {
-    const { id_livre } = req.body
+    const { id_livre, date_retour_prevue } = req.body
 
     if (!id_livre || !Number.isInteger(Number(id_livre)) || Number(id_livre) <= 0)
         return res.status(400).send('id_livre invalide')
+
+    const toDate = (d) => d.toISOString().split('T')[0]
+    const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
+    const maxDate = new Date()
+    maxDate.setDate(maxDate.getDate() + 30)
+    const maxDateStr = toDate(maxDate)
+
+    let dateRetourPrevueStr
+    if (date_retour_prevue) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date_retour_prevue))
+            return res.status(400).send('date_retour_prevue invalide')
+        if (date_retour_prevue < todayStr)
+            return res.status(400).send('La date de retour doit être dans le futur')
+        if (date_retour_prevue > maxDateStr)
+            return res.status(400).send('La date de retour ne peut pas dépasser 30 jours')
+        dateRetourPrevueStr = date_retour_prevue
+    } else {
+        dateRetourPrevueStr = maxDateStr
+    }
 
     db.query('SELECT statut FROM livres WHERE id = ?', [id_livre], (err, results) => {
         if (err) throw err
         if (results.length === 0) return res.status(404).send('Livre introuvable')
         if (results[0].statut !== 'disponible') return res.status(409).send('Livre déjà emprunté')
 
-        const dateEmprunt = new Date()
-        const dateRetourPrevue = new Date()
-        dateRetourPrevue.setDate(dateRetourPrevue.getDate() + 30)
-
-        const toDate = (d) => d.toISOString().split('T')[0]
-
         const insertSql = `
             INSERT INTO emprunts (id_utilisateur, id_livre, date_emprunt, date_retour_prevue)
             VALUES (?, ?, ?, ?)
         `
-        db.query(insertSql, [req.user.id, id_livre, toDate(dateEmprunt), toDate(dateRetourPrevue)], (err) => {
+        db.query(insertSql, [req.user.id, id_livre, todayStr, dateRetourPrevueStr], (err) => {
             if (err) throw err
             db.query("UPDATE livres SET statut = 'emprunté' WHERE id = ?", [id_livre], (err) => {
                 if (err) throw err
-                res.json({ message: 'Emprunt enregistré', date_retour_prevue: toDate(dateRetourPrevue) })
+                res.json({ message: 'Emprunt enregistré', date_retour_prevue: dateRetourPrevueStr })
             })
         })
     })
