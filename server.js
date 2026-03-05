@@ -8,12 +8,13 @@ const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 const db = require('./services/database')
 
-const JWT_SECRET = "HelloThereImObiWan"
+const jwtSecret = process.env.JWT_SECRET || '';
+
 function authenticateToken(req, res, next) {
     const token = req.cookies.token
     if (!token) return res.sendStatus(401)
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, jwtSecret, (err, user) => {
         if (err) return res.sendStatus(403)
         req.user = user
         next()
