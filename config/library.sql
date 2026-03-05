@@ -47,7 +47,7 @@ CREATE TABLE `livres` (
 
 INSERT INTO `livres` (`id`, `titre`, `auteur`, `date_publication`, `isbn`, `description`, `statut`, `photo_url`) VALUES
 (1, 'Developpement Web mobile avec HTML, CSS et JavaScript Pour les Nuls', 'William HARREL', '2023-11-09', 'DHIDZH1374R', 'Un livre indispensable ï¿½ tous les concepteurs ou dï¿½veloppeurs de sites Web pour iPhone, iPad, smartphones et tablettes !Ce livre est destinï¿½ aux dï¿½veloppeurs qui veulent crï¿½er un site Internet destinï¿½ aux plate-formes mobiles en adoptant les standard du Web que sont HTML, XHTML, les CSS et JavaScript.', 'emprunté', 'https://cdn.cultura.com/cdn-cgi/image/width=180/media/pim/82_metadata-image-20983225.jpeg'),
-(4, 'PHP et MySql pour les Nuls ', 'Janet VALADE', '2023-11-14', '23R32R2R4', 'Le livre best-seller sur PHP & MySQL !\r\n\r\n\r\nAvec cette 5e ï¿½dition de PHP et MySQL pour les Nuls, vous verrez qu\'il n\'est plus nï¿½cessaire d\'ï¿½tre un as de la programmation pour dï¿½velopper des sites Web dynamiques et interactifs.\r\n', 'disponible', ' https://cdn.cultura.com/cdn-cgi/image/width=830/media/pim/66_metadata-image-20983256.jpeg');
+(4, 'PHP et MySql pour les Nuls ', 'Janet VALADE', '2023-11-14', '23R32R2R4', "Le livre best-seller sur PHP & MySQL !\r\n\r\n\r\nAvec cette 5e ï¿½dition de PHP et MySQL pour les Nuls, vous verrez qu\'il n\'est plus nï¿½cessaire d\'ï¿½tre un as de la programmation pour dï¿½velopper des sites Web dynamiques et interactifs.\r\n", 'disponible', ' https://cdn.cultura.com/cdn-cgi/image/width=830/media/pim/66_metadata-image-20983256.jpeg');
 
 -- --------------------------------------------------------
 
@@ -72,6 +72,26 @@ CREATE TABLE `utilisateurs` (
 INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `email`, `mot_de_passe`, `date_inscription`, `role`) VALUES
 (1, 'Smith', 'John', 'john@smith.com', '$2b$10$6UQGsRHPMkIjH.1RqeTN/Oo4XRCXwBJEBdOb9lNjddbRIIj3/Olk6', '2023-11-09 21:54:09', 'admin'),
 (2, 'Lord', 'Marc', 'marc@lord.com', '$2b$10$6UQGsRHPMkIjH.1RqeTN/Oo4XRCXwBJEBdOb9lNjddbRIIj3/Olk6', '2023-11-09 21:59:23', 'utilisateur');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `emprunts`
+--
+
+CREATE TABLE `emprunts` (
+  `id_emprunt` int NOT NULL AUTO_INCREMENT,
+  `id_utilisateur` int NOT NULL,
+  `id_livre` int NOT NULL,
+  `date_emprunt` date NOT NULL DEFAULT (CURDATE()),
+  `date_retour_prevue` date NOT NULL,
+  `date_retour_effective` date DEFAULT NULL,
+  PRIMARY KEY (`id_emprunt`),
+  FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs`(`id`),
+  FOREIGN KEY (`id_livre`) REFERENCES `livres`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Index pour les tables déchargées
