@@ -7,6 +7,11 @@ export default ({ mode }) => {
   return defineConfig({
     //base: `${process.env.VITE_BASE_URL === '/' ?'' :process.env.VITE_BASE_URL}`,
     plugins: [react()],
+    server: {
+      proxy: {
+        '/api': 'http://localhost:3000'
+      }
+    },
     build: {
       outDir: './../webpub'
     }
