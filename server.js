@@ -34,8 +34,8 @@ router.use(cookieParser());
 router.use('/api/books', booksrouter);
 router.use('/api/users', usersRouter);
 
-router.post('/api/logout', (req, res) => {
-    req.session.destroy();
+router.post('/api/logout', (_, res) => {
+    res.clearCookie('token');
     res.json({ message: 'Déconnexion réussie' });
 });
 
