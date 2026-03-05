@@ -65,20 +65,24 @@ router.post('/', authenticateToken, (req, res) => {
 
 // PUT /api/loans/:id/return — return a book
 router.put('/:id/return', authenticateToken, (req, res) => {
+    const loanId = Number(req.params.id)
+    if (!Number.isInteger(loanId) || loanId <= 0)
+        return res.status(400).send('id_emprunt invalide')
+
     const sql = `
         SELECT e.id_livre, e.id_utilisateur
         FROM emprunts e
         WHERE e.id_emprunt = ? AND e.date_retour_effective IS NULL
     `
-    db.query(sql, [req.params.id], (err, results) => {
+    db.query(sql, [loanId], (err, results) => {
         if (err) throw err
         if (results.length === 0) return res.status(404).send('Emprunt introuvable ou déjà retourné')
         if (results[0].id_utilisateur !== req.user.id) return res.sendStatus(403)
 
         const today = new Date().toISOString().split('T')[0]
-        const idLivre = results[0].id_livre
+        const idLivre = results[0].id_livre 
 
-        db.query('UPDATE emprunts SET date_retour_effective = ? WHERE id_emprunt = ?', [today, req.params.id], (err) => {
+        db.query('UPDATE emprunts SET date_retour_effective = ? WHERE id_emprunt = ?', [today, loanId], (err) => {
             if (err) throw err
             db.query("UPDATE livres SET statut = 'disponible' WHERE id = ?", [idLivre], (err) => {
                 if (err) throw err
